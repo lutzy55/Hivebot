@@ -1,0 +1,26 @@
+{
+  "name": "cb-discord-bot-dev",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "keywords": [
+    "discord",
+    "bot"
+  ],
+  "author": "Brendan Lutz",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lutzy55/CB-Discord-Bot-Dev/issues"
+  },
+  "homepage": "https://github.com/lutzy55/CB-Discord-Bot-Dev#readme",
+  "dependencies": {
+    "discord.js": "^12.5.1"
+  }
+}
