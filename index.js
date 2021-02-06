@@ -189,8 +189,8 @@ client.on('message', message => {
 
 client.on('messageReactionAdd', (messageReaction, user) => {
 	const filter = (reaction, user) => reaction.emoji.name === '👍' && user.id !== client.user.id;
-	
 	//if (messageReaction.message.member) return;
+	console.log(client.user.id)
 
 	const embedToEdit = messageReaction.message.embeds[0];
 
@@ -208,13 +208,15 @@ function updateGameReviewerFieldValues(newSignupUser) {
 }
 
 	function editThisEmbed(){
+		if (messageReaction.users.cache.get(user.id).bot) return;
 		let newSignupUser = messageReaction.users.cache.get(user.id)
 		console.log ("Embed to be edited: " + embedToEdit.fields)
 		let editedEmbed = updateGameReviewerFieldValues(newSignupUser)
 		console.log ("Edited Embed: " + editedEmbed)
 		messageReaction.message.edit(editedEmbed)
-		console.log(`${newSignupUser} "Has singed up for a review here: https://discord.com/channels/${messageReaction.message.guild.id}/${messageReaction.message.channel.id}/${messageReaction.message.id}`)
-		client.users.cache.get(HiveMindCooridnatorID).send(`${newSignupUser} "Has singed up for a review here: https://discord.com/channels/${messageReaction.message.guild.id}/${messageReaction.message.channel.id}/${messageReaction.message.id}`)
+
+		//Sends DM to Hivemind Coordinator about person signing up for game
+		client.users.cache.get(HiveMindCooridnatorID).send(`${newSignupUser} Has signed up for a review here: https://discord.com/channels/${messageReaction.message.guild.id}/${messageReaction.message.channel.id}/${messageReaction.message.id}`)
 		
 		return editedEmbed
 	}
