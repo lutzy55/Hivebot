@@ -1,11 +1,22 @@
 const fs = require('fs');
 const Discord = require('discord.js');
-const { prefix, token } = require('./config.json');
-let { HivemindParentCategoryID, HivemindAlertsChannelID, GoogleLinkBotToken } = require('./config.json');
+require('dotenv').config(
+	
+);
+
+
+const { prefix } = require('./config.json');
+//let { HivemindParentCategoryID, HivemindAlertsChannelID, GoogleLinkBotToken } = require('./config.json');
+const HivemindParentCategoryID = process.env.HIVEMIND_PARENT_CATEGORY_ID;
+const HivemindAlertsChannelID = process.env.HIVEMIND_ALERTS_CHANNEL_ID;
+const GoogleLinkBotToken = process.env.GOOGLE_LINK_BOT_TOKEN;
 const { time } = require('console');
 const { resolve } = require('path');
 //const { name } = require('./commands/purge-all-channels');
-
+// console.log (process.env.DISCORD_TOKEN);
+// console.log (HivemindParentCategoryID);
+// console.log (HivemindAlertsChannelID);
+// console.log (GoogleLinkBotToken);
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
 
@@ -198,8 +209,9 @@ function updateGameReviewerFieldValues() {
 	function editThisEmbed(){
 		console.log ("Embed to be edited: " + embedToEdit.fields)
 		let editedEmbed = updateGameReviewerFieldValues()
-		console.log ("Edited Embed: " + editedEmbed.fields)
+		console.log ("Edited Embed: " + editedEmbed)
 		messageReaction.message.edit(editedEmbed)
+		console.log("New Signup to Game, reviewer list is now:" + editedEmbed)
 		
 		return editedEmbed
 	}
@@ -213,4 +225,5 @@ function updateGameReviewerFieldValues() {
 	
 });
 
-client.login(token);
+//client.login(token);
+client.login();
