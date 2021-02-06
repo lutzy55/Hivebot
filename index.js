@@ -5,7 +5,7 @@ require('dotenv').config(
 );
 
 
-const { prefix } = require('./config.json');
+const { prefix, HiveMindCooridnatorID } = require('./config.json');
 //let { HivemindParentCategoryID, HivemindAlertsChannelID, GoogleLinkBotToken } = require('./config.json');
 const HivemindParentCategoryID = process.env.HIVEMIND_PARENT_CATEGORY_ID;
 const HivemindAlertsChannelID = process.env.HIVEMIND_ALERTS_CHANNEL_ID;
@@ -195,23 +195,26 @@ client.on('messageReactionAdd', (messageReaction, user) => {
 	const embedToEdit = messageReaction.message.embeds[0];
 
 
-function updateGameReviewerFieldValues() {
+function updateGameReviewerFieldValues(newSignupUser) {
 	if (messageReaction.users.cache.get(user.id).bot) return;
 	let gameReviwerFieldName = "Reviewer Signup"
 	//let gameReviewerField = embedToEdit.fields.find(fields => fields.name === `${gameReviwerFieldName}`).value = "Please Work"
 
-	embedToEdit.fields.find(fields => fields.name === `${gameReviwerFieldName}`).value += `\n${messageReaction.users.cache.get(user.id)}`
+	
+	embedToEdit.fields.find(fields => fields.name === `${gameReviwerFieldName}`).value += `\n${newSignupUser}`
 	let editedEmbed = messageReaction.message.edit(embedToEdit)
 	
 	return editedEmbed 
 }
 
 	function editThisEmbed(){
+		let newSignupUser = messageReaction.users.cache.get(user.id)
 		console.log ("Embed to be edited: " + embedToEdit.fields)
-		let editedEmbed = updateGameReviewerFieldValues()
+		let editedEmbed = updateGameReviewerFieldValues(newSignupUser)
 		console.log ("Edited Embed: " + editedEmbed)
 		messageReaction.message.edit(editedEmbed)
-		console.log("New Signup to Game, reviewer list is now:" + editedEmbed)
+		console.log(`${newSignupUser} "Has singed up for a review here: https://discord.com/channels/${messageReaction.message.guild.id}/${messageReaction.message.channel.id}/${messageReaction.message.id}`)
+		client.users.cache.get(HiveMindCooridnatorID).send(`${newSignupUser} "Has singed up for a review here: https://discord.com/channels/${messageReaction.message.guild.id}/${messageReaction.message.channel.id}/${messageReaction.message.id}`)
 		
 		return editedEmbed
 	}
