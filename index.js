@@ -17,7 +17,7 @@ const { isNull } = require('util');
  //console.log (HivemindParentCategoryID);
  //console.log (HivemindAlertsChannelID);
  //console.log (GoogleLinkBotToken);
-const client = new Discord.Client();
+const client = new Discord.Client({ partials: ['MESSAGE', 'REACTION'] });
 client.commands = new Discord.Collection();
 
 // Reads .js files from the commands folder and creates an array
@@ -192,17 +192,48 @@ client.on('message', message => {
 });
 
 
-client.on('messageReactionAdd', (messageReaction, user) => {
+client.on('messageReactionAdd', async (messageReaction, user) => {
+	// When we receive a reaction we check if the reaction is partial or not
+	if (messageReaction.partial) {
+		// If the message this reaction belongs to was removed the fetching might result in an API error, which we need to handle
+		try {
+			await messageReaction.fetch();
+			await messageReaction.users.fetch();
+		} catch (error) {
+			console.error('Something went wrong when fetching the message: ', error);
+			// Return as `reaction.message.author` may be undefined/null
+			return;
+		}
+	}
+	// Now the message has been cached and is fully available
+	console.log(`${messageReaction.message.author}'s message "${messageReaction.message.embeds}" gained a reaction!`);
+	// The reaction is now also fully available and the properties will be reflected accurately:
+	console.log(`${messageReaction.count} user(s) have given the same reaction to this message!`);
+	
 	//const filter = (reaction, user) => reaction.emoji.name === '👍' && user.id !== client.user.id;
 	//if (messageReaction.message.member) return;
 	//console.log(client.user.id)
-	const embedToEdit = messageReaction.message.embeds[0];
+	
+	// if (typeof messageReaction.message.embeds == 'object'){
+	// 	console.log("embed output" + typeof messageReaction.message.embeds)
+	// } else return;
+
 	const reactionUser = messageReaction.users.cache.get(user.id)
 	const userReactions = messageReaction.message.reactions.cache.filter(reaction => reaction.users.cache.has(reactionUser));
 	console.log("User Reactions:" + userReactions)
 
 	// If the embed being reacted to isn't a Hivemind Review Request, return
+
+	if(messageReaction.emoji.name !== ('👍' || '👎')) return;
+
+try{
+	embedToEdit = messageReaction.message.embeds[0];
 	if (!embedToEdit.title == "Hivemind Review Request") return;
+}
+catch (error){
+	console.error(`Something went wrong when checking embed title: ${error}`)
+	return;
+}	
 
 	function addGameReviewerFieldValues(reviewer, currentReviewersList, gameReviwerFieldName) {
 		
@@ -233,8 +264,8 @@ client.on('messageReactionAdd', (messageReaction, user) => {
 	}
 
 	function editReivewRequestEmbed(reactionUser){
-		if (messageReaction.users.cache.get(user.id).bot || messageReaction.message.channel.id != HivemindAlertsChannelID) return;
 
+		if (messageReaction.users.cache.get(user.id).bot || messageReaction.message.channel.id != HivemindAlertsChannelID) return;
 	
 		let gameReviwerFieldName = "Reviewer Signup"
 		let currentReviewersList = embedToEdit.fields.find(fields => fields.name === `${gameReviwerFieldName}`).value
@@ -285,12 +316,13 @@ client.on('messageReactionAdd', (messageReaction, user) => {
 		}
 	}
 
-	try {editReivewRequestEmbed(reactionUser) }
+	try {await editReivewRequestEmbed(reactionUser) }
 	catch (error) {
-		console.error(error);
+		console.error(`Something went wrong when editing Revew Request Embed: ${error}`);
 		// expected output: ReferenceError: nonExistentFunction is not defined
 		// Note - error messages will vary depending on browser
 	  }
+	console.log("Reaction Loop completed")
 });
 
 client.login();
