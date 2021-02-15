@@ -193,6 +193,7 @@ client.on('message', message => {
 
 
 client.on('messageReactionAdd', async (messageReaction, user) => {
+	
 	// When we receive a reaction we check if the reaction is partial or not
 	if (messageReaction.partial) {
 		// If the message this reaction belongs to was removed the fetching might result in an API error, which we need to handle
@@ -206,25 +207,20 @@ client.on('messageReactionAdd', async (messageReaction, user) => {
 		}
 	}
 	// Now the message has been cached and is fully available
-	console.log(`${messageReaction.message.author}'s message "${messageReaction.message.embeds}" gained a reaction!`);
+	console.log(`${messageReaction.message.author}'s message "${messageReaction.message.content}" gained a reaction!`);
 	// The reaction is now also fully available and the properties will be reflected accurately:
 	console.log(`${messageReaction.count} user(s) have given the same reaction to this message!`);
 	
-	//const filter = (reaction, user) => reaction.emoji.name === '👍' && user.id !== client.user.id;
-	//if (messageReaction.message.member) return;
-	//console.log(client.user.id)
-	
-	// if (typeof messageReaction.message.embeds == 'object'){
-	// 	console.log("embed output" + typeof messageReaction.message.embeds)
-	// } else return;
 
+	client.users.fetch(HiveMindCooridnatorID);
 	const reactionUser = messageReaction.users.cache.get(user.id)
 	const userReactions = messageReaction.message.reactions.cache.filter(reaction => reaction.users.cache.has(reactionUser));
 	console.log("User Reactions:" + userReactions)
 
 	// If the embed being reacted to isn't a Hivemind Review Request, return
+	if (!messageReaction.message.author.bot) return;
 
-	if(messageReaction.emoji.name !== ('👍' || '👎')) return;
+	//if(messageReaction.emoji.name !== ('👍' || '👎')) return;
 
 try{
 	embedToEdit = messageReaction.message.embeds[0];
@@ -238,7 +234,7 @@ catch (error){
 	function addGameReviewerFieldValues(reviewer, currentReviewersList, gameReviwerFieldName) {
 		
 		// If message was reacted to by a bot, exit.
-		if (messageReaction.users.cache.get(user.id).bot) return;
+		//if (messageReaction.users.cache.get(user.id).bot) return;
 
 		// Add the reacting user to the Reviewer List field
 		embedToEdit.fields.find(fields => fields.name === `${gameReviwerFieldName}`).value += `\n${reviewer}`
@@ -247,12 +243,12 @@ catch (error){
 		let editedEmbed = messageReaction.message.edit(embedToEdit)
 	
 		return editedEmbed 
-	}
+		}
 
 	function removeGameReviewerFieldValues(filteredSplitReviewerList,gameReviwerFieldName) {
 		
 		// If message was reacted to by a bot, exit.
-		if (messageReaction.users.cache.get(user.id).bot) return;
+		// if (messageReaction.users.cache.get(user.id).bot) return;
 
 		// Remove the reacting user to the Reviewer List field
 		embedToEdit.fields.find(fields => fields.name === `${gameReviwerFieldName}`).value = `\n${filteredSplitReviewerList}`
@@ -263,10 +259,18 @@ catch (error){
 		return editedEmbed 
 	}
 
-	function editReivewRequestEmbed(reactionUser){
+	async function editReivewRequestEmbed(reactionUser){
 
 		if (messageReaction.users.cache.get(user.id).bot || messageReaction.message.channel.id != HivemindAlertsChannelID) return;
+		
+		let userId = messageReaction.users.cache.get(user.id)
 	
+		try {
+			await messageReaction.users.remove(userId)		
+		} catch (error) {
+			console.error('Failed to remove reactions.');
+		}
+
 		let gameReviwerFieldName = "Reviewer Signup"
 		let currentReviewersList = embedToEdit.fields.find(fields => fields.name === `${gameReviwerFieldName}`).value
 		console.log(`Current Game Reviwer List: ${currentReviewersList}`)
@@ -288,7 +292,6 @@ catch (error){
 				if (currentReviewersList.includes(user.id)) return; 			
 			console.log ("Embed to be edited: " + embedToEdit.fields)
 
-
 			let editedEmbed = addGameReviewerFieldValues(reactionUser, currentReviewersList, gameReviwerFieldName)
 			console.log ("Edited Embed: " + editedEmbed)
 			
@@ -297,6 +300,7 @@ catch (error){
 
 			//Sends DM to Hivemind Coordinator about person signing up for game
 			client.users.cache.get(HiveMindCooridnatorID).send(`${reactionUser} Has signed up for a review here: https://discord.com/channels/${messageReaction.message.guild.id}/${messageReaction.message.channel.id}/${messageReaction.message.id}`)
+			
 			
 			return editedEmbed
 		}
@@ -313,12 +317,14 @@ catch (error){
 			console.log(`${reactionUser} has been removed from the game reviwer list`)
 			//Sends DM to Hivemind Coordinator about person dropping out for game
 			client.users.cache.get(HiveMindCooridnatorID).send(`${reactionUser} Has been REMOVED from the reviewer list here: https://discord.com/channels/${messageReaction.message.guild.id}/${messageReaction.message.channel.id}/${messageReaction.message.id}`)
+			
+		
 		}
 	}
 
 	try {await editReivewRequestEmbed(reactionUser) }
 	catch (error) {
-		console.error(`Something went wrong when editing Revew Request Embed: ${error}`);
+		console.error(`Something went wrong when editing Review Request Embed: ${error}`);
 		// expected output: ReferenceError: nonExistentFunction is not defined
 		// Note - error messages will vary depending on browser
 	  }
