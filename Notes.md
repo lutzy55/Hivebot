@@ -17,3 +17,13 @@
 * Game specfic channels are still viewable by all Hivemind reviewers
 
 ## Known Errors
+* Discord only allows for 50 pins in a channel at a time. When 51 is attempted, Hivebot will error out and quit. Error handling will be a part of a future update. Right now, Hivebot will work around this by automatically restarting, however it won't pin the last message or any messages going forward until the channel is under 50. Unfortunately, the only indication of this currently is the lack of message in the channel like "🐝🐝 pinned a message to this channel. See all the pins. — 03/26/2021".
+# Deployment Configurations
+
+## Enviromental Variables
+HIVEMIND_PARENT_CATEGORY_ID
+HIVEMIND_ALERTS_CHANNEL_ID
+GOOGLE_LINK_BOT_TOKEN
+
+## Notes
+The Discord Bot token needs to be manually added to the last line of in the `client.login([TOKEN])` 
